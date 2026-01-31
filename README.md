@@ -230,17 +230,28 @@ Exchange: email.exchange (type: direct/topic)
 
 ### Environment Setup
 
-1. Copy the example environment file:
+Each service has its own environment configuration for better isolation:
+
+1. **Copy environment files for each service:**
 ```bash
+# User Service
+cp user/.env.example user/.env
+
+# Email Service
+cp email/.env.example email/.env
+
+# Root (for docker-compose)
 cp .env.example .env
 ```
 
-2. Update the `.env` file with your configuration:
-   - Database credentials
-   - RabbitMQ credentials
-   - SMTP/Email credentials (for Gmail, use App Password)
+2. **Update each `.env` file with your configuration:**
+   - **user/.env**: User service database and RabbitMQ settings
+   - **email/.env**: Email service database, RabbitMQ, and SMTP settings
+   - **.env** (root): Docker Compose shared configuration
 
 ### Running with Docker Compose
+
+#### Full Stack (All Services)
 
 1. Build and start all services:
 ```bash
@@ -255,6 +266,18 @@ docker-compose down
 3. Stop and remove volumes (clean database):
 ```bash
 docker-compose down -v
+```
+
+#### Infrastructure Only (For Local Development)
+
+Run only databases and RabbitMQ (useful when running services from IDE):
+
+```bash
+# Start infrastructure services
+docker-compose -f docker-compose.dev.yaml up -d
+
+# Stop infrastructure services
+docker-compose -f docker-compose.dev.yaml down
 ```
 
 ### Service Endpoints
@@ -276,22 +299,31 @@ Once running, the services will be available at:
 
 To run services locally without Docker:
 
-1. Start PostgreSQL and RabbitMQ using Docker:
+1. **Start infrastructure services:**
 ```bash
-docker-compose up user-db email-db rabbitmq
+docker-compose -f docker-compose.dev.yaml up -d
 ```
 
-2. Run the User Service:
+2. **Set up environment files:**
+```bash
+cp user/.env.example user/.env
+cp email/.env.example email/.env
+# Edit the .env files with your configuration
+```
+
+3. **Run the User Service:**
 ```bash
 cd user
 ./mvnw spring-boot:run
 ```
 
-3. Run the Email Service:
+4. **Run the Email Service:**
 ```bash
 cd email
 ./mvnw spring-boot:run
 ```
+
+Each service will read its own `.env` file using the dotenv-java library.
 
 ### Building Individual Services
 
