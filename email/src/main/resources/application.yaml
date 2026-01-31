@@ -95,7 +95,7 @@ management:
 logging:
   level:
     root: INFO
-    user-mail-sender.email: DEBUG
+    user_mail_sender.email: DEBUG
     org.springframework.amqp: DEBUG
     org.springframework.mail: DEBUG
   pattern:
