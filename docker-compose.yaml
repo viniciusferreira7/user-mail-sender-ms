@@ -1,5 +1,7 @@
 version: '3.8'
 
+name: user-mail-sender-ms
+
 services:
   # PostgreSQL Database for User Service
   user-db:
