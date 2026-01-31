@@ -230,7 +230,7 @@ Exchange: email.exchange (type: direct/topic)
 
 ### Environment Setup
 
-Each service has its own environment configuration for better isolation:
+Each service has its own environment configuration for complete isolation:
 
 1. **Copy environment files for each service:**
 ```bash
@@ -239,36 +239,54 @@ cp user/.env.example user/.env
 
 # Email Service
 cp email/.env.example email/.env
-
-# Root (for docker-compose)
-cp .env.example .env
 ```
 
 2. **Update each `.env` file with your configuration:**
    - **user/.env**: User service database and RabbitMQ settings
    - **email/.env**: Email service database, RabbitMQ, and SMTP settings
-   - **.env** (root): Docker Compose shared configuration
 
 ### Running with Docker Compose
 
-#### Full Stack (All Services)
+#### Option 1: Full Stack (All Services Together)
 
-1. Build and start all services:
+Run all services from the root directory:
+
 ```bash
+# Build and start all services
 docker-compose up --build
-```
 
-2. Stop all services:
-```bash
+# Stop all services
 docker-compose down
-```
 
-3. Stop and remove volumes (clean database):
-```bash
+# Stop and remove volumes (clean database)
 docker-compose down -v
 ```
 
-#### Infrastructure Only (For Local Development)
+#### Option 2: Individual Services (Isolated)
+
+Each service can be run independently:
+
+**User Service:**
+```bash
+cd user
+docker-compose up --build
+
+# Stop
+docker-compose down
+```
+
+**Email Service:**
+```bash
+cd email
+docker-compose up --build
+
+# Stop
+docker-compose down
+```
+
+**Note:** Each service includes its own database and RabbitMQ instance when run independently.
+
+#### Option 3: Infrastructure Only (For Local Development)
 
 Run only databases and RabbitMQ (useful when running services from IDE):
 

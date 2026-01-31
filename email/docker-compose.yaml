@@ -1,0 +1,84 @@
+name: user-mail-sender-ms
+
+services:
+  # PostgreSQL Database for Email Service
+  email-db:
+    image: postgres:16-alpine
+    container_name: email-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - email-db-data:/var/lib/postgresql/data
+    networks:
+      - email-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: email-rabbitmq
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "15673:15672"
+    volumes:
+      - email-rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - email-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Email Service
+  email-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: email-service
+    env_file:
+      - .env
+    environment:
+      DB_HOST: email-db
+      DB_PORT: 5432
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    depends_on:
+      email-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - email-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${SERVER_PORT}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+networks:
+  email-network:
+    driver: bridge
+
+volumes:
+  email-db-data:
+  email-rabbitmq-data:
