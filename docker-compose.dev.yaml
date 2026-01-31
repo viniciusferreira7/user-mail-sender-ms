@@ -1,0 +1,73 @@
+version: '3.8'
+
+name: user-mail-sender-ms
+
+services:
+  # PostgreSQL Database for User Service
+  user-db:
+    image: postgres:16-alpine
+    container_name: user-db
+    environment:
+      POSTGRES_DB: ${USER_DB_NAME:-userdb}
+      POSTGRES_USER: ${USER_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD:-postgres123}
+    ports:
+      - "${USER_DB_PORT:-5432}:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - mail-sender-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER:-postgres} -d ${USER_DB_NAME:-userdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Database for Email Service
+  email-db:
+    image: postgres:16-alpine
+    container_name: email-db
+    environment:
+      POSTGRES_DB: ${EMAIL_DB_NAME:-emaildb}
+      POSTGRES_USER: ${EMAIL_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${EMAIL_DB_PASSWORD:-postgres123}
+    ports:
+      - "${EMAIL_DB_PORT:-5433}:5432"
+    volumes:
+      - email-db-data:/var/lib/postgresql/data
+    networks:
+      - mail-sender-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EMAIL_DB_USER:-postgres} -d ${EMAIL_DB_NAME:-emaildb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin123}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - mail-sender-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  mail-sender-network:
+    driver: bridge
+
+volumes:
+  user-db-data:
+  email-db-data:
+  rabbitmq-data:
