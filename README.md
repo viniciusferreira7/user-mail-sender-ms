@@ -31,11 +31,193 @@ This microservice handles user mail sending operations using a message-driven ar
 
 ## Architecture
 
-The microservice follows an event-driven architecture where:
-1. User-related events are published to RabbitMQ queues
-2. Email service consumes messages from the queue
-3. User service provides necessary user data for email processing
-4. Emails are sent asynchronously, ensuring system reliability and scalability
+### Overview
+
+This project implements a **microservices architecture** using event-driven communication patterns. The system is designed for scalability, reliability, and loose coupling between services.
+
+```
+┌─────────────────┐         ┌──────────────┐         ┌─────────────────┐
+│                 │         │              │         │                 │
+│  User Service   │────────▶│   RabbitMQ   │────────▶│  Email Service  │
+│                 │ Publish │   (Broker)   │ Consume │                 │
+│  Port: 8080     │         │              │         │  Port: 8081     │
+│                 │         │  Port: 5672  │         │                 │
+└────────┬────────┘         └──────────────┘         └────────┬────────┘
+         │                                                      │
+         │                                                      │
+         ▼                                                      ▼
+┌─────────────────┐                                   ┌─────────────────┐
+│   PostgreSQL    │                                   │   PostgreSQL    │
+│   (User DB)     │                                   │   (Email DB)    │
+│   Port: 5432    │                                   │   Port: 5433    │
+└─────────────────┘                                   └─────────────────┘
+```
+
+### System Components
+
+#### 1. User Service
+- **Responsibility**: Manages user data and publishes email notification events
+- **Database**: PostgreSQL (userdb)
+- **Port**: 8080
+- **Key Features**:
+  - User CRUD operations
+  - User preference management
+  - Event publishing to RabbitMQ
+  - RESTful API endpoints
+  - Data validation with Bean Validation
+
+#### 2. Email Service
+- **Responsibility**: Consumes email events and sends emails via SMTP
+- **Database**: PostgreSQL (emaildb)
+- **Port**: 8081
+- **Key Features**:
+  - Message consumption from RabbitMQ
+  - Email template processing
+  - SMTP integration (Gmail, SendGrid, etc.)
+  - Email delivery tracking and status
+  - Retry mechanism for failed emails
+  - Dead Letter Queue (DLQ) handling
+
+#### 3. RabbitMQ Message Broker
+- **Responsibility**: Asynchronous message routing between services
+- **Ports**: 5672 (AMQP), 15672 (Management UI)
+- **Components**:
+  - **Exchange**: `email.exchange` (Topic/Direct)
+  - **Queue**: `email.send` (Main queue)
+  - **DLQ**: `email.send.dlq` (Dead Letter Queue)
+  - **Routing Key**: `email.send.key`
+
+#### 4. PostgreSQL Databases
+- **User Database**: Stores user information and preferences
+- **Email Database**: Stores email history, templates, and delivery status
+- **Migration**: Flyway for version-controlled schema management
+
+### Communication Patterns
+
+#### Event-Driven Communication
+- **Pattern**: Publisher-Subscriber (Pub/Sub)
+- **Protocol**: AMQP (Advanced Message Queuing Protocol)
+- **Message Format**: JSON
+
+#### Flow Example:
+1. User Service receives an API request to send a notification
+2. User Service publishes an event to RabbitMQ with user details and email content
+3. RabbitMQ routes the message to the `email.send` queue
+4. Email Service consumes the message from the queue
+5. Email Service processes and sends the email via SMTP
+6. Email Service updates the delivery status in its database
+7. If sending fails, message is retried or sent to DLQ
+
+### Technology Stack Details
+
+#### Backend Framework
+- **Spring Boot 4.0.2**: Modern Java framework with auto-configuration
+- **Spring MVC**: RESTful API development
+- **Spring Data JPA**: Database access and ORM
+- **Spring AMQP**: RabbitMQ integration
+- **Spring Mail**: Email sending capabilities
+
+#### Data Layer
+- **PostgreSQL 16**: Relational database for persistent storage
+- **Hibernate**: ORM implementation for JPA
+- **Flyway**: Database migration and version control
+- **HikariCP**: High-performance JDBC connection pool
+
+#### Messaging
+- **RabbitMQ 3.13**: Message broker with management plugin
+- **AMQP Protocol**: Reliable message delivery
+- **Publisher Confirms**: Message acknowledgment
+- **Consumer Acknowledgment**: At-least-once delivery
+
+#### Observability
+- **Spring Actuator**: Health checks and metrics
+- **Prometheus**: Metrics collection (ready)
+- **Logging**: SLF4J with Logback
+
+#### API Documentation
+- **SpringDoc OpenAPI 3**: Auto-generated API documentation
+- **Swagger UI**: Interactive API explorer
+
+### Design Patterns
+
+#### 1. Event-Driven Architecture
+- Asynchronous communication between services
+- Loose coupling and independent scaling
+- Event sourcing for audit trail
+
+#### 2. Database per Service
+- Each microservice has its own database
+- Data independence and isolation
+- Service autonomy
+
+#### 3. Retry Pattern
+- Automatic retry for transient failures
+- Exponential backoff strategy
+- Dead Letter Queue for permanent failures
+
+#### 4. Health Check Pattern
+- Liveness and readiness probes
+- Graceful degradation
+- Circuit breaker ready
+
+#### 5. Repository Pattern
+- Data access abstraction with Spring Data JPA
+- Clean separation of business logic and data access
+
+### Message Queue Structure
+
+#### Queue Configuration
+```yaml
+Exchange: email.exchange (type: direct/topic)
+  └── Binding: email.send.key
+      └── Queue: email.send
+          ├── Consumer: Email Service
+          ├── Max Retries: 3
+          ├── Retry Interval: 3s (exponential backoff)
+          └── DLQ: email.send.dlq (for failed messages)
+```
+
+#### Message Format
+```json
+{
+  "userId": "123",
+  "recipientEmail": "user@example.com",
+  "subject": "Welcome to Our Service",
+  "body": "Email content here",
+  "templateId": "welcome-template",
+  "metadata": {
+    "priority": "high",
+    "timestamp": "2026-01-31T10:00:00Z"
+  }
+}
+```
+
+### Scalability Considerations
+
+#### Horizontal Scaling
+- Stateless services enable multiple instances
+- RabbitMQ distributes messages across consumers
+- Database connection pooling for concurrent requests
+- Docker Compose ready for container orchestration
+
+#### Vertical Scaling
+- Configurable JVM heap size
+- Connection pool sizing
+- Thread pool configuration
+
+#### Performance Optimization
+- Docker layer caching for faster builds
+- Maven dependency caching with BuildKit
+- Database indexing (to be implemented)
+- Message batching capability (future enhancement)
+
+### Security Features
+
+- Non-root container users
+- Environment variable management with dotenv
+- Secrets excluded from version control (.gitignore)
+- Database credential isolation
+- SMTP authentication with TLS/STARTTLS
 
 ## Getting Started
 
