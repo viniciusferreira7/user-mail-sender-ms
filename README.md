@@ -39,7 +39,97 @@ The microservice follows an event-driven architecture where:
 
 ## Getting Started
 
-(Documentation to be added)
+### Prerequisites
+
+- Java 17 or higher
+- Maven 3.9+
+- Docker and Docker Compose
+- Git
+
+### Environment Setup
+
+1. Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+2. Update the `.env` file with your configuration:
+   - Database credentials
+   - RabbitMQ credentials
+   - SMTP/Email credentials (for Gmail, use App Password)
+
+### Running with Docker Compose
+
+1. Build and start all services:
+```bash
+docker-compose up --build
+```
+
+2. Stop all services:
+```bash
+docker-compose down
+```
+
+3. Stop and remove volumes (clean database):
+```bash
+docker-compose down -v
+```
+
+### Service Endpoints
+
+Once running, the services will be available at:
+
+- **User Service**: http://localhost:8080
+  - API Docs: http://localhost:8080/swagger-ui.html
+  - Health: http://localhost:8080/actuator/health
+
+- **Email Service**: http://localhost:8081
+  - API Docs: http://localhost:8081/swagger-ui.html
+  - Health: http://localhost:8081/actuator/health
+
+- **RabbitMQ Management**: http://localhost:15672
+  - Default credentials: admin/admin123
+
+### Local Development
+
+To run services locally without Docker:
+
+1. Start PostgreSQL and RabbitMQ using Docker:
+```bash
+docker-compose up user-db email-db rabbitmq
+```
+
+2. Run the User Service:
+```bash
+cd user
+./mvnw spring-boot:run
+```
+
+3. Run the Email Service:
+```bash
+cd email
+./mvnw spring-boot:run
+```
+
+### Building Individual Services
+
+```bash
+# Build User Service
+cd user
+./mvnw clean package
+
+# Build Email Service
+cd email
+./mvnw clean package
+```
+
+### Docker Build Optimization
+
+The Dockerfiles use:
+- Multi-stage builds for smaller images
+- BuildKit cache mounts for faster Maven dependency downloads
+- JAR layer extraction for optimal caching
+- Non-root user for security
 
 ## License
 
