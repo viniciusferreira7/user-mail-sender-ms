@@ -247,56 +247,47 @@ cp email/.env.example email/.env
 
 ### Running with Docker Compose
 
-#### Option 1: Full Stack (All Services Together)
+Each service can be run independently with its own Docker Compose file:
 
-Run all services from the root directory:
+#### User Service
 
-```bash
-# Build and start all services
-docker-compose up --build
-
-# Stop all services
-docker-compose down
-
-# Stop and remove volumes (clean database)
-docker-compose down -v
-```
-
-#### Option 2: Individual Services (Isolated)
-
-Each service can be run independently:
-
-**User Service:**
 ```bash
 cd user
+
+# Start all (database + rabbitmq + service)
 docker-compose up --build
+
+# Start only infrastructure (database + rabbitmq)
+docker-compose up -d user-db rabbitmq
 
 # Stop
 docker-compose down
 ```
 
-**Email Service:**
+#### Email Service
+
 ```bash
 cd email
+
+# Start all (database + rabbitmq + service)
 docker-compose up --build
+
+# Start only infrastructure (database + rabbitmq)
+docker-compose up -d email-db rabbitmq
 
 # Stop
 docker-compose down
 ```
 
-**Note:** Each service includes its own database and RabbitMQ instance when run independently.
+#### Quick Start (Infrastructure Only)
 
-#### Option 3: Infrastructure Only (For Local Development)
-
-Run only databases and RabbitMQ (useful when running services from IDE):
+Use the provided script to start infrastructure for both services:
 
 ```bash
-# Start infrastructure services
-docker-compose -f docker-compose.dev.yaml up -d
-
-# Stop infrastructure services
-docker-compose -f docker-compose.dev.yaml down
+./scripts/up-containers.sh
 ```
+
+This starts all databases and RabbitMQ instances, allowing you to run the Java services from your IDE.
 
 ### Service Endpoints
 
