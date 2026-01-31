@@ -1,0 +1,7 @@
+# Secrets and sensitive files
+.env linguist-generated=true
+*.env linguist-generated=true
+.env.* linguist-generated=true
+
+# Mark example files as safe
+*.env.example linguist-generated=false
