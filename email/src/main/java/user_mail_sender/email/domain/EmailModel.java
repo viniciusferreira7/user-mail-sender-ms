@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import user_mail_sender.email.domain.enums.EmailStatus;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "emails")
@@ -35,4 +38,8 @@ public class EmailModel {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EmailStatus status;
+
+    @CreationTimestamp
+    @Column(name = "send_at", updatable = false)
+    private LocalDateTime sendAt;
 }
