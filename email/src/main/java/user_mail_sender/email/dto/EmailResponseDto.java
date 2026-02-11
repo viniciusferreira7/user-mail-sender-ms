@@ -15,6 +15,6 @@ public record EmailResponseDto (
         String subject,
         String body,
         EmailStatus status,
-        LocalDateTime sendAt;
+        LocalDateTime sendAt
 
 ){}
