@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import user_mail_sender.email.domain.enums.EmailStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "emails")
@@ -18,16 +19,16 @@ public class EmailModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private UUID userId;
 
-    @Column(nullable = false)
-    private String to;
+    @Column(name = "email_to", nullable = false)
+    private String emailTo;
 
-    @Column(nullable = false)
-    private String from;
+    @Column(name = "email_from", nullable = false)
+    private String emailFrom;
 
     @Column(nullable = false)
     private String subject;
@@ -40,6 +41,6 @@ public class EmailModel {
     private EmailStatus status;
 
     @CreationTimestamp
-    @Column(name = "send_at", updatable = false)
+    @Column(name = "send_at", updatable = false, nullable = false)
     private LocalDateTime sendAt;
 }
