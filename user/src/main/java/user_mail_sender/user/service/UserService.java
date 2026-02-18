@@ -1,5 +1,6 @@
 package user_mail_sender.user.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import user_mail_sender.user.domain.UserModel;
 import user_mail_sender.user.dto.UserRequestDto;
@@ -15,9 +16,9 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public UserResponseDto createUser(UserRequestDto userRequestDTO){
-        UserModel userModel = UserDtoMapper.toDomain(userRequestDTO);
+    @Transactional
+    public UserModel createUser(UserModel userModel){
 
-        return UserDtoMapper.toDto(this.userRepository.save(userModel));
+        return this.userRepository.save(userModel);
     }
 }
