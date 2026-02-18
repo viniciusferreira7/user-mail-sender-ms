@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-public record UserResponseDTO(
+public record UserResponseDto(
         UUID id,
         String name,
         String email,
