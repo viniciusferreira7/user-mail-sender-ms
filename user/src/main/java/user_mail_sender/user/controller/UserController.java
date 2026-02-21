@@ -7,8 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import user_mail_sender.user.domain.UserModel;
@@ -59,10 +59,10 @@ public class UserController {
                     content = @Content
             )
     })
-    public ResponseEntity<UserResponseDto> createUser(@Payload UserRequestDto userRequestDto){
+    public ResponseEntity<UserResponseDto> register(@RequestBody UserRequestDto userRequestDto){
         UserModel userModel = UserDtoMapper.toDomain(userRequestDto);
 
-        UserResponseDto userResponseDto = UserDtoMapper.toDto(this.userService.createUser(userModel));
+        UserResponseDto userResponseDto = UserDtoMapper.toDto(this.userService.register(userModel));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
     }
