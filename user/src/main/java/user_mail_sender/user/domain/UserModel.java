@@ -21,12 +21,13 @@ public class UserModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID")
     private UUID id;
 
     @Column(length = 255, nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(length = 255,  unique = true, nullable = false)
     private String email;
 
     @CreationTimestamp

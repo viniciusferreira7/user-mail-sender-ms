@@ -23,4 +23,5 @@ public record UserResponseDto(
 
         @Schema(description = "Timestamp of the last update to the user")
         LocalDateTime updatedAt
-) {}
+) {
+}
