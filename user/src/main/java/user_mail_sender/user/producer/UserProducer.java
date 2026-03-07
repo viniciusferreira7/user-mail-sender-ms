@@ -14,7 +14,7 @@ public class UserProducer {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void sendMessage(UserModel userModel){
+    public void sendMessageWhenUserIsCreated(UserModel userModel){
         UserCreatedDto userCreatedDto = UserCreatedDto.builder()
                 .userId(userModel.getId())
                 .name(userModel.getName())

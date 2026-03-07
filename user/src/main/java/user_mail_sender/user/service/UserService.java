@@ -20,7 +20,7 @@ public class UserService {
     public UserModel register(UserModel userModel){
         UserModel userRegistered = this.userRepository.save(userModel);
 
-        userProducer.sendMessage(userRegistered);
+        userProducer.sendMessageWhenUserIsCreated(userRegistered);
 
         return userRegistered;
     }
