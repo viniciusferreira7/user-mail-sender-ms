@@ -10,6 +10,6 @@ import user_mail_sender.email.dto.UserCreatedDto;
 public class EmailConsumer {
     @RabbitListener(queues = RabbitMqConfig.QUEEUE_NAME)
     public void listenEmailQueue(@Payload UserCreatedDto message){
-        System.out.println("Consuming email message: " + message);
+        System.out.println("Consuming email message: " + message.email());
     }
 }
