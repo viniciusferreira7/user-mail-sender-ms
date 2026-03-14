@@ -6,6 +6,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import user_mail_sender.email.domain.EmailModel;
 import user_mail_sender.email.domain.enums.EmailStatus;
 import user_mail_sender.email.dto.UserCreatedDto;
@@ -26,6 +27,7 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    @Transactional
     public void sendWelcomeEmail(UserCreatedDto userCreatedDto) {
         EmailModel emailModel = new EmailModel();
         emailModel.setUserId(userCreatedDto.userId());
