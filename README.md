@@ -1,7 +1,5 @@
 # User Mail Sender Microservice
 
-> **WIP (Work In Progress)** - This project is currently under development
-
 ## Overview
 
 A microservices system built with Java Spring Boot and RabbitMQ for handling asynchronous user email notifications. When a user registers, the User Service publishes an event to RabbitMQ, and the Email Service consumes that event and sends a welcome email via SMTP.
@@ -17,7 +15,7 @@ A microservices system built with Java Spring Boot and RabbitMQ for handling asy
 - **Spring Actuator** - Health checks and metrics
 - **Docker + Docker Compose** - Containerization
 - **Lombok** - Boilerplate reduction
-  - **dotenv-java** - Environment variable loading
+- **dotenv-java** - Environment variable loading
 
 ## Architecture
 
@@ -72,22 +70,25 @@ A microservices system built with Java Spring Boot and RabbitMQ for handling asy
 
 - **Port:** 8080
 - **Database:** `userdb` on port 5432
-- **Responsibilities:** User registration, validation, and event publishing
+- **Responsibilities:** User CRUD, validation, and event publishing
 - **Key classes:**
-  - `UserController` — `POST /api/users`
-  - `UserService` — business logic + triggers event
+  - `UserController` — `GET/POST/PUT/DELETE /api/users`
+  - `UserService` — business logic + triggers event on registration
   - `UserProducer` — publishes `UserCreatedDto` to RabbitMQ
   - `UserModel` — JPA entity (`users` table)
+  - `GlobalExceptionHandler` — handles validation (400), not found (404), duplicate email (409), and generic (500) errors
 
 ### Email Service (`/email`)
 
 - **Port:** 8081
 - **Database:** `emaildb` on port 5433
-- **Responsibilities:** Consuming user events and sending emails via SMTP
+- **Responsibilities:** Consuming user events, sending welcome emails via SMTP, and persisting delivery status
 - **Key classes:**
   - `EmailConsumer` — `@RabbitListener` on `email-queue`
+  - `EmailService` — sends email via `JavaMailSender`, persists status (`SENDING` → `SENT`/`FAILED`)
   - `EmailModel` — JPA entity (`emails` table)
   - `EmailStatus` — enum: `PENDING`, `SENDING`, `SENT`, `FAILED`, `RETRYING`
+  - `GlobalExceptionHandler` — handles validation (400), generic (500) errors
 
 ### Database Schema
 
@@ -176,7 +177,19 @@ cd user  && ./mvnw clean package
 cd email && ./mvnw clean package
 ```
 
-## Service Endpoints
+## API Endpoints
+
+### User Service
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `POST` | `/api/users` | Register a new user |
+| `GET` | `/api/users` | List all users |
+| `GET` | `/api/users/{id}` | Get user by ID |
+| `PUT` | `/api/users/{id}` | Update user by ID |
+| `DELETE` | `/api/users/{id}` | Delete user by ID |
+
+### Service URLs
 
 | Service | URL |
 |---------|-----|
@@ -195,6 +208,7 @@ cd email && ./mvnw clean package
 - **Repository Pattern** — Spring Data JPA abstraction
 - **Retry + DLQ** — failed messages retried, then routed to dead letter queue
 - **DTO Mapping** — clean separation between API, domain, and event layers
+- **Global Exception Handling** — `@RestControllerAdvice` with structured `ErrorResponseDto` per service
 
 ## Security
 
