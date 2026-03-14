@@ -17,7 +17,7 @@ A microservices system built with Java Spring Boot and RabbitMQ for handling asy
 - **Spring Actuator** - Health checks and metrics
 - **Docker + Docker Compose** - Containerization
 - **Lombok** - Boilerplate reduction
-- **dotenv-java** - Environment variable loading
+  - **dotenv-java** - Environment variable loading
 
 ## Architecture
 
